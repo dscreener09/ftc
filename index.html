@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Binary Terminal</title>
+    <style>
+        body {
+            background-color: black;
+            color: #22c55e;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .binary-background {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(20px, 1fr));
+            gap: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .binary-sequence {
+            font-size: 0.75rem;
+            background: none;
+            border: none;
+            color: #22c55e;
+            cursor: pointer;
+            transition: color 0.2s;
+            text-align: center;
+        }
+        .binary-sequence:hover {
+            color: white;
+        }
+        .fact-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: black;
+            border: 1px solid #22c55e;
+            color: #22c55e;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            z-index: 20;
+            max-width: 80%;
+            cursor: move;
+        }
+        .fact-popup h2 {
+            margin-top: 0;
+        }
+        .fact-popup .button-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .fact-popup button {
+            background-color: #22c55e;
+            color: black;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 0.25rem;
+        }
+        .fact-popup .close-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            color: #22c55e;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .contract-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #1a1a1a;
+            border: 1px solid #22c55e;
+            color: #22c55e;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            z-index: 30;
+            text-align: center;
+        }
+        .contract-box button {
+            margin-top: 0.5rem;
+            background-color: #22c55e;
+            color: black;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div id="binaryBackground" class="binary-background"></div>
+    </main>
+    <div id="factPopup" class="fact-popup">
+        <button class="close-button" onclick="closeFactPopup()">×</button>
+        <h2>Crypto Fact</h2>
+        <p id="factContent"></p>
+        <div class="button-container">
+            <button onclick="closeFactPopup()">Close</button>
+            <button class="share-button" onclick="shareFact()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                    <polyline points="16 6 12 2 8 6"></polyline>
+                    <line x1="12" y1="2" x2="12" y2="15"></line>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div class="contract-box">
+        <p id="contractAddress">0x1234567890abcdef1234567890abcdef12345678</p>
+        <button onclick="copyContractAddress()">Copy Address</button>
+    </div>
+
+    <script>
+        const cryptoFacts = [
+            "Bitcoin, the first cryptocurrency, was created in 2009 by an unknown person using the pseudonym Satoshi Nakamoto.",
+            "Ethereum, the second-largest cryptocurrency by market cap, was proposed in 2013 by Vitalik Buterin.",
+            // ... other facts ...
+        ];
+
+        let currentFact = '';
+
+        function generateBinarySequence() {
+            return Array.from({ length: 8 }, () => Math.random() > 0.5 ? '1' : '0').join('');
+        }
+
+        function createBinaryBackground() {
+            const background = document.getElementById('binaryBackground');
+            const totalButtons = Math.floor(window.innerWidth / 20) * Math.floor(window.innerHeight / 20);
+            for (let i = 0; i < totalButtons; i++) {
+                const button = document.createElement('button');
+                button.className = 'binary-sequence';
+                button.textContent = generateBinarySequence();
+                button.onclick = showRandomFact;
+                background.appendChild(button);
+            }
+        }
+
+        function showRandomFact() {
+            const factPopup = document.getElementById('factPopup');
+            const factContent = document.getElementById('factContent');
+            currentFact = cryptoFacts[Math.floor(Math.random() * cryptoFacts.length)];
+            factContent.textContent = currentFact;
+            factPopup.style.display = 'block';
+        }
+
+        function closeFactPopup() {
+            const factPopup = document.getElementById('factPopup');
+            factPopup.style.display = 'none';
+        }
+
+        function shareFact() {
+            const tweetText = encodeURIComponent(currentFact + ' #CryptoFact');
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
+            window.open(twitterUrl, '_blank');
+        }
+
+        function copyContractAddress() {
+            const contractAddress = document.getElementById('contractAddress').textContent;
+            navigator.clipboard.writeText(contractAddress).then(() => {
+                alert('Contract address copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Make the fact popup draggable
+        function makeDraggable(element) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            if (element) {
+                element.onmousedown = dragMouseDown;
+            }
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                element.style.top = (element.offsetTop - pos2) + "px";
+                element.style.left = (element.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        // Initialize draggable functionality
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const factPopup = document.getElementById('factPopup');
+            makeDraggable(factPopup);
+            createBinaryBackground();
+        });
+    </script>
+</body>
+</html>
